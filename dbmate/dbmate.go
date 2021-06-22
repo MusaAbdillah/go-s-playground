@@ -18,6 +18,10 @@ type Product struct {
   UserID uint
 }
 
+func (p *Product) TableName() string {
+  return "products"
+}
+// ---------------------
 type User struct {
   gorm.Model
   Name         string       `gorm:"default:Musa"`
@@ -29,6 +33,11 @@ type User struct {
   Products      []Product
 }
 
+func (c *User) TableName() string {
+  return "users"
+}
+// ---------------------
+
 
 // main function
 func main() {
@@ -39,7 +48,7 @@ func main() {
   }
 
   // Migrate the schema
-  db.AutoMigrate(&Product{}, &User{})
+  db.AutoMigrate(&User{}, &Product{})
 
   // set data 
   Email         := "musa.abdilla@ottodigital.id"
