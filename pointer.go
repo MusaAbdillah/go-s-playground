@@ -11,6 +11,7 @@ func main() {
 
     y := &x
     fmt.Println(y) // 0xc0000b6020
+    // *(dereferencing operator).
     fmt.Println(*y) // 21
 
     // This is valid too
