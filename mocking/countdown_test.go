@@ -1,10 +1,9 @@
-package main
-
+package mocking
 
 import (
-	"testing"
 	"bytes"
 	"fmt"
+	"testing"
 )
 
 type Sleeper interface {
@@ -12,44 +11,46 @@ type Sleeper interface {
 }
 
 type SpySleeper struct {
-	Calls int 
+	Calls int
 }
 
 func (s *SpySleeper) Sleep() {
 	s.Calls++
 }
 
-const finalWord = "Go!"
-const countDownStart = 3
+const (
+	finalWord      = "Go!"
+	countDownStart = 3
+)
 
 func TestCountdown(t *testing.T) {
-    buffer := &bytes.Buffer{}
-    spySleeper := &SpySleeper{}
+	buffer := &bytes.Buffer{}
+	spySleeper := &SpySleeper{}
 
-    Countdown(buffer, spySleeper)
+	Countdown(buffer, spySleeper)
 
-    got := buffer.String()
-    want := `3
-    2
-    1
-    Go!`
+	got := buffer.String()
+	want := `3
+2
+1
+Go!`
 
-    if got != want {
-        t.Errorf("got %q want %q", got, want)
-    }
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
 
-    if spySleeper.Calls != 4 {
-    	t.Errorf("Not enough calls to sleeper, want 4 got %d", spySleeper.Calls)
-    }
+	fmt.Println(spySleeper.Calls)
+	if spySleeper.Calls != 4 {
+		t.Errorf("Not enough calls to sleeper, want 4 got %d", spySleeper.Calls)
+	}
 }
 
-func Countdown(out *bytes.Buffer, sleeper Sleeper){
-		for i := countdownStart; i>0; i-- {
-			sleeper.Sleep()
-			fmt.Fprintln(out, i)
-		}
-
-
+func Countdown(out *bytes.Buffer, sleeper Sleeper) {
+	for i := countDownStart; i > 0; i-- {
 		sleeper.Sleep()
-	    fmt.Fprint(out, finalWord)
+		fmt.Fprintln(out, i)
+	}
+
+	sleeper.Sleep()
+	fmt.Fprint(out, finalWord)
 }
