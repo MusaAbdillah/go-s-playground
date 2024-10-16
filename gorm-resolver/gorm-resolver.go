@@ -3,10 +3,13 @@ package main
 // import
 import (
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
 )
 
@@ -61,7 +64,20 @@ func main() {
 	dsn_replica_1 := fmt.Sprintf("host=localhost user=owner password=HSnDDgFtyW9fyFI dbname=rideshare_development port=54322 TimeZone=Asia/Jakarta")
 	dsn_replica_2 := fmt.Sprintf("host=localhost user=owner password=HSnDDgFtyW9fyFI dbname=rideshare_development port=54323 TimeZone=Asia/Jakarta")
 
-	db, err := gorm.Open(postgres.Open(dsn_primary), &gorm.Config{})
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second, // Slow SQL threshold
+			LogLevel:                  logger.Info, // Log level
+			IgnoreRecordNotFoundError: false,       // Ignore ErrRecordNotFound error for logger
+			ParameterizedQueries:      true,        // Don't include params in the SQL log
+			Colorful:                  true,        // Disable color
+		},
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn_primary), &gorm.Config{
+		Logger: newLogger,
+	})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -81,6 +97,9 @@ func main() {
 	db.First(&user, 13251893) // find product with integer primary key
 
 	fmt.Println(user)
+
+	// delete vehicle
+	db.Where("name = 'Ligier'").Delete(&vehicle)
 
 	vehicle = Vehicle{
 		Name:   "Ligier",
