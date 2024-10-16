@@ -98,6 +98,8 @@ func main() {
 
 	fmt.Println(user)
 
+	db.Updates(&user)
+
 	// delete vehicle
 	db.Where("name = 'Ligier'").Delete(&vehicle)
 
