@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -94,11 +95,20 @@ func main() {
 	// Read
 	var user User
 	var vehicle Vehicle
-	db.First(&user, 13251893) // find product with integer primary key
+	var wg sync.WaitGroup
 
-	fmt.Println(user)
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(user User, wg *sync.WaitGroup) {
+			defer wg.Done()
+			db.First(&user, 13251893) // find product with integer primary key
 
-	db.Updates(&user)
+		}(user, &wg)
+	}
+
+	wg.Wait()
+
+	// db.Updates(&user)
 
 	// delete vehicle
 	db.Where("name = 'Ligier'").Delete(&vehicle)
