@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
 type Customer struct {
@@ -9,7 +10,10 @@ type Customer struct {
 	Name string
 }
 
-func worker(id int, jobs <-chan Customer, results chan<- Customer) {
+func worker(id int, jobs <-chan Customer, results chan<- Customer, wg *sync.WaitGroup) {
+
+	defer wg.Done()
+
 	for j := range jobs {
 		fmt.Println("worker", id, "started  job for customer", j.Name)
 		results <- j
@@ -20,6 +24,7 @@ func main() {
 
 	var (
 		customers []Customer
+		wg        sync.WaitGroup
 	)
 
 	for i := 0; i <= 10; i++ {
@@ -32,6 +37,7 @@ func main() {
 	// fmt.Println("===customers===")
 	// fmt.Println(customers)
 
+	var workerNumber int = 3
 	var numJobs int = len(customers)
 	jobs := make(chan Customer, len(customers))
 	// jobOne := make(chan int, numJobs)
@@ -41,8 +47,9 @@ func main() {
 	// 	go workerOne(w, jobOne)
 	// }
 
-	for w := 1; w <= numJobs; w++ {
-		go worker(w, jobs, results)
+	for w := 1; w <= workerNumber; w++ {
+		wg.Add(1)
+		go worker(w, jobs, results, &wg)
 	}
 
 	// // its only need if you wanna result
@@ -50,8 +57,9 @@ func main() {
 		jobs <- customer
 	}
 	close(jobs)
+	wg.Wait()
 
-	for a := 1; a <= numJobs; a++ {
-		<-results
-	}
+	// for a := 1; a <= numJobs; a++ {
+	// 	<-results
+	// }
 }
